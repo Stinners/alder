@@ -1,0 +1,7 @@
+package alder 
+
+modules = Main 
+          
+sourcedir = "src"
+
+main = Main

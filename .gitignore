@@ -1,0 +1,6 @@
+# Generated Files 
+src/TagList.idr*
+
+build/
+
+*.idr~
