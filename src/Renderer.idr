@@ -3,31 +3,32 @@ module Renderer
 import Data.Strings
 
 import Attributes
+import Tag
+
 
 str : List String -> String 
 str = foldl (++) ""
 
 renderAttr : List Attribute -> String
 renderAttr [] = ""
-renderAttr props = " " ++ (unwords . map render) props
+renderAttr props = " " ++ (unwords . map Attributes.render) props
 
 renderChildren : List String -> String
 renderChildren children = str children
 
-export
-tag : String -> List Attribute -> List String -> String 
-tag tagName propsList children =
-  fastConcat ["<", tagName, (renderAttr propsList), ">", (renderChildren children), "</", tagName, ">"]
+close : String -> String 
+close name = fastConcat ["</", name, ">"]
 
-export 
-voidTag : String -> List Attribute -> String
-voidTag tagName propsList = 
-  fastConcat ["<", tagName, (renderAttr propsList), ">"]
+open' : String -> List Attribute -> String 
+open' name attr = fastConcat ["<", name, renderAttr attr, ">"]
 
-export 
-html5 : String -> String 
-html5 contents = fastConcat ["<!DOCTYPE html>", contents]
+mutual
+  renderChildren' : List VNode -> String 
+  renderChildren' =  str . (map render)
 
-export 
-comment : String -> String 
-comment contents = fastConcat ["<!-- ", contents, " -->"]
+  export
+  render : VNode -> String
+  render (Tag name attr children) = fastConcat [open' name attr, renderChildren' children, close name]
+  render (VoidTag name attr) = open' name attr
+  render (Text text) = text
+
