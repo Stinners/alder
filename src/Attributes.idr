@@ -20,14 +20,18 @@ data Attribute = Class (List String)
 attr : Show ty => String -> {auto value : ty} -> String 
 attr name = fastConcat [name, "=", show $ value]
 
+Show Attribute where
+  show (Class x) = "class=\"" ++ (unwords x) ++ "\""
+  show (Accept x) = attr "accept"
+  show (AcceptCharSet x) = attr "accept-char-set"
+  show (AcessKey x) = attr "attr accesskey"
+  show (Action x) = attr "action"
+  show (Cols x) = attr "cols" 
+  show (Id x) = attr "id"
+  show (Attr name value) = attr name {value = value}
+  show Async = "async"
+
 export
-render : Attribute -> String 
-render (Class x) = "class=\"" ++ (unwords x) ++ "\""
-render (Accept x) = attr "accept"
-render (AcceptCharSet x) = attr "accept-char-set"
-render (AcessKey x) = attr "attr accesskey"
-render (Action x) = attr "action"
-render (Cols x) = attr "cols" 
-render (Id x) = attr "id"
-render (Attr name value) = attr name {value = value}
-render Async = "async"
+Show (List Attribute) where
+  show [] = ""
+  show props = " " ++ (unwords . map show) props

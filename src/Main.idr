@@ -7,8 +7,8 @@ main = do
   let htmlTest = html [] 
                      [ head [] []
                      , body [] [
-                         h1 [Class ["header"], Id "main-header"] [Text "Hello World"] 
-                         ,  p [] [Text "This is a test"]
+                         h1 [Class ["header"], Id "main-header"] [Text "Hello, World!"] 
+                         ,  p [] [Text "This is test"]
                          ]
                      ]
-  putStrLn (render htmlTest)
+  putStrLn (show htmlTest)
