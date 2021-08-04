@@ -1,5 +1,14 @@
 module Main 
 
-main : IO () 
-main = do 
-  putStrLn "Hello World"
+import HTML
+
+main : IO ()
+main = do
+  let htmlTest = html [] 
+                     [ head [] []
+                     , body [] [
+                         h1 [Class ["header"], Id "main-header"] ["Hello World"] 
+                         ,  p [] ["This is a test"]
+                         ]
+                     ]
+  putStrLn htmlTest
