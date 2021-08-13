@@ -2,6 +2,8 @@ module Main
 
 import HTML
 
+
+{-
 -- Creates an empty node an returns a pointer to it
 %foreign "browser:lambda: node => document.createElement(node)"
 prim__makeNode : String -> PrimIO AnyPtr
@@ -57,12 +59,15 @@ main = do
   p <- render root node 
   _ <- render p text
   pure ()
+  -}
 
-  --let htmlTest = html [] 
-  --                   [ head [] []
-  --                   , body [] [
-  --                       h1 [Class ["header"], Id "main-header"] [Text "Hello, World!"] 
-  --                       ,  p [] [Text "This is test"]
-  --                       ]
-  --                   ]
-  --putStrLn (show htmlTest)
+main : IO ()
+main = do
+  let htmlTest = html [] 
+                     [ head [] []
+                     , body [] [
+                         h1 [Class ["header"], Id "main-header"] [text "Hello, World!"] 
+                         ,  p [] [text "This is test"]
+                         ]
+                     ]
+  putStrLn (show htmlTest)
