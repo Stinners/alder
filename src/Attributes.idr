@@ -34,4 +34,4 @@ Show Attribute where
 export
 Show (List Attribute) where
   show [] = ""
-  show props = " " ++ (unwords . map show) props
+  show props = " " ++ (unwords . map show) props ++ " "
