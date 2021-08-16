@@ -14,8 +14,8 @@ record Metadata where
 mutual 
   public export
   data VNode = Tag String (List Attribute) (List VDOM)
-                | VoidTag String (List Attribute)
-                | Text String
+             | VoidTag String (List Attribute)
+             | Text String
 
   public export
   record VDOM where 

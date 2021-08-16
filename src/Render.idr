@@ -1,10 +1,11 @@
-module RenderPrim
+module Render
 
 import Data.Strings
 
 import VNode
 import Attributes
 
+public export 
 Node : Type 
 Node = AnyPtr 
 
@@ -83,14 +84,14 @@ makeNode (Text text) = primIO $ prim__madeText text
 -- Render the virtual DOM 
 -- Returns the VDOM, but with references to each coresponding concrete 
 -- Node added to the metadata
-
-render : (root : Node) -> VDOM -> IO VDOM
-render root vdom = do
+export
+renderTree : (root : Node) -> VDOM -> IO VDOM
+renderTree root vdom = do
   node <- makeNode vdom.node 
   let vdom = record { metadata->ref = Just node } vdom
   case vdom.node of 
     (Tag name attrs children) => do 
-      newChildren <- traverse (render node) children
+      newChildren <- traverse (renderTree node) children
       let newVNode = Tag name attrs children
       pure (record { node = newVNode } vdom )
     _ => pure vdom
