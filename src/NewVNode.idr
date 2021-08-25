@@ -110,7 +110,19 @@ reRender root (LiveDOM _ _ oldRef) new = do
 
 mutual 
   diffChildren : (root : NodeRef) -> (old : List (DOM L)) -> (new : List (DOM V)) -> IO (List (DOM L))
-  diffChildren root old new = ?diffChildren_rhs
+  diffChildren root (old :: olds) (new :: news) = do 
+    this <-  diff2 root new old 
+    rest <- diffChildren root olds news
+    pure (this :: rest)
+  diffChildren root ((LiveDOM _ _ ref) :: olds) [] = do
+    _ <- primIO $ prim__remove ref
+    rest <- diffChildren root olds []
+    pure rest
+  diffChildren root [] (new :: news) = do 
+    this <- render root new
+    rest <- diffChildren root [] news
+    pure (this :: rest)
+  diffChildren root [] [] = pure []
 
   -- Currently this does nothing 
   updateMeta : (new : DOM V) -> (old : DOM L) -> IO (DOM L)
