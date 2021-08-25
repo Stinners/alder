@@ -35,3 +35,18 @@ export
 Show (List Attribute) where
   show [] = ""
   show props = " " ++ (unwords . map show) props ++ " "
+
+export
+Eq Attribute where 
+  (==) (Class left) (Class right)                 = left == right
+  (==) (Accept left) (Accept right)               = left == right
+  (==) (AcceptCharSet left) (AcceptCharSet right) = left == right
+  (==) (AcessKey left) (AcessKey right)           = left == right
+  (==) (Action left) (Action right)               = left == right
+  (==) (Cols left) (Cols right)                   = left == right
+  (==) (Id left) (Id right)                       = left == right
+  (==) (Attr leftName leftValue) (Attr rightName rightValue) = 
+    leftName == rightName && leftValue == rightValue
+  (==) Async Async = True
+  (==) _ _ = False
+
