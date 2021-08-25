@@ -5,12 +5,6 @@ import Data.Strings
 import VNode
 import Attributes
 
-public export 
-Node : Type 
-Node = AnyPtr 
-
--- FFI Primitives 
-
 -- Creates an empty node an returns a pointer to it
 %foreign "browser:lambda: node => document.createElement(node)"
 prim__makeNode : String -> PrimIO AnyPtr
@@ -34,27 +28,13 @@ prim__consoleLog : AnyPtr -> PrimIO AnyPtr
 %foreign "browser:lambda: value => console.log(value)"
 prim__consoleString : String -> PrimIO AnyPtr
 
-
--- Utility Functions 
-
-consoleLog : AnyPtr -> IO AnyPtr 
-consoleLog value = primIO $ prim__consoleLog value
-
-consoleString : String -> IO AnyPtr 
-consoleString value = primIO $ prim__consoleString value
-
-getRoot : String -> IO AnyPtr 
-getRoot id = primIO $ prim__getRoot id
-
-
--- Adding attributes to a node 
-
-setAttributes : Node -> List Attribute -> IO Node
+export
+setAttributes : NodeRef -> List Attribute -> IO NodeRef
 setAttributes node attrs = do
   let _ = map (setAttribute node) attrs
   pure node
   where 
-    setAttribute : Node -> Attribute -> IO Node
+    setAttribute : NodeRef -> Attribute -> IO NodeRef
     setAttribute node (Class xs) = primIO $ prim__setAttr node "class" (unwords xs)
     setAttribute node (Accept x) = primIO $ prim__setAttr node "accept" x
     setAttribute node (AcceptCharSet x) = primIO $ prim__setAttr node "accept-charset" x
@@ -65,35 +45,35 @@ setAttributes node attrs = do
     setAttribute node (Attr x y) = primIO $ prim__setAttr node x y
     setAttribute node (Id x) = primIO $ prim__setAttr node "is" x
 
--- Create a new node 
 
-makeNode : VNode -> IO Node 
-
+makeNode : (Node V tagType) -> IO NodeRef
 makeNode (Tag name attrs children) = do
   node <- primIO $ prim__makeNode name 
   _ <- setAttributes node attrs
   pure node 
 
-makeNode (VoidTag name attrs) = do 
+makeNode (Void name attrs) = do
   node <- primIO $ prim__makeNode name 
   _ <- setAttributes node attrs
-  pure node
+  pure node 
 
 makeNode (Text text) = primIO $ prim__madeText text
 
--- Render the virtual DOM 
--- Returns the VDOM, but with references to each coresponding concrete 
--- Node added to the metadata
-export
-renderTree : (root : Node) -> VDOM -> IO VDOM
-renderTree root vdom = do
-  node <- makeNode vdom.node 
-  let vdom = record { metadata->ref = Just node } vdom
-  case vdom.node of 
-    (Tag name attrs children) => do 
-      newChildren <- traverse (renderTree node) children
-      let newVNode = Tag name attrs children
-      pure (record { node = newVNode } vdom )
-    _ => pure vdom
+attachNode : (parent : NodeRef) -> (child : NodeRef) -> IO ()
+attachNode parent child = do
+  _ <- primIO $ prim__addNode parent child
+  pure ()
 
+export
+render : (root : NodeRef) -> (vdom : DOM V) -> IO (DOM L)
+render root (VDOM meta node) = do
+  ref <- makeNode node
+  _ <-  attachNode root ref
+  case node of 
+    (Tag name attr children) => do 
+      children <- traverse (render ref) children
+      let liveNode = Tag name attr children
+      pure (LiveDOM meta liveNode ref)
+    (Text string) => pure (LiveDOM meta (Text string) ref)
+    (Void name attr) => pure (LiveDOM meta (Void name attr) ref)
 

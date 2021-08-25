@@ -4,48 +4,41 @@ import Attributes
 
 public export
 NodeRef : Type 
-NodeRef = AnyPtr
+NodeRef = AnyPtr 
+
+public export
+data DOMState = L | V
+
+public export
+data NodeType = TagNode | VoidNode | TextNode
 
 public export
 record Metadata where 
   constructor MkMetadata
-  ref  : Maybe AnyPtr
-
-mutual 
-  public export
-  data VNode = Tag String (List Attribute) (List VDOM)
-             | VoidTag String (List Attribute)
-             | Text String
-
-  public export
-  record VDOM where 
-    constructor MkVNode 
-    metadata : Metadata 
-    node : VNode
 
 initMetadata : Metadata
-initMetadata = MkMetadata Nothing
+initMetadata = MkMetadata
+
+mutual
+  public export
+  data Node : (life:DOMState) -> NodeType -> Type where 
+    Tag  : String -> List Attribute -> List (DOM life) -> Node life TagNode 
+    Void : String -> List Attribute                    -> Node life VoidNode
+    Text : String                                      -> Node life TextNode
+
+  public export
+  data DOM : (life:DOMState) -> Type where 
+    LiveDOM : Metadata -> Node L nodeType -> NodeRef -> DOM L
+    VDOM    : Metadata -> Node V nodeType ->            DOM V
 
 export
-defineTag : String -> List Attribute -> List VDOM -> VDOM
-defineTag tagName attr children = MkVNode initMetadata (Tag tagName attr children)
+defineTag : String -> List Attribute -> List (DOM V) -> DOM V
+defineTag name attrs children = VDOM initMetadata (Tag name attrs children)
 
 export
-defineVoidTag : String -> List Attribute -> VDOM
-defineVoidTag tagName attr = MkVNode initMetadata (VoidTag tagName attr)
+defineVoidTag : String -> List Attribute -> DOM V
+defineVoidTag name attrs = VDOM initMetadata (Void name attrs)
 
 export 
-text : String -> VDOM
-text string = MkVNode initMetadata (Text string)
-
-close : String -> String 
-close name = fastConcat ["</", name, ">"]
-
-open' : String -> List Attribute -> String 
-open' name attr = fastConcat ["<", name, show attr, ">"]
-
-export
-Show VDOM where
-  show (MkVNode _ (Tag name attrs children)) = fastConcat [open' name attrs, (fastConcat . map show) children, close name]
-  show (MkVNode _ (VoidTag name attrs)) = fastConcat [open' name attrs, close name]
-  show (MkVNode _ (Text string)) = string
+text : String -> DOM V
+text string = VDOM initMetadata (Text string)
