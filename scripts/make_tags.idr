@@ -11,10 +11,10 @@ idrisReserved : List String
 idrisReserved = ["data"]
 
 tagType : String
-tagType = "List Attribute -> List VDOM -> VDOM"
+tagType = "List Attribute -> List (DOM V) -> DOM V"
 
 voidTagType : String
-voidTagType = "List Attribute -> VDOM"
+voidTagType = "List Attribute -> DOM V"
 
 getTags : IO (Maybe (List String))
 getTags = do 
@@ -37,12 +37,13 @@ makeTag tag = let
   tagName = if elem tag idrisReserved 
                then tag ++ "'" 
                else tag
+  tagString = "\"" ++ tag ++ "\""
 
   (tagFunc, tagType) = if elem tag selfClosing 
                           then ("defineVoidTag", voidTagType)
                           else ("defineTag", tagType)
   in 
-  unlines ["export", tagName ++ " : " ++ tagType, tagName ++ " = " ++ tagFunc ++ " " ++ tag, ""]
+  unlines ["export", tagName ++ " : " ++ tagType, tagName ++ " = " ++ tagFunc ++ " " ++ tagString, ""]
 
 
 main : IO () 
