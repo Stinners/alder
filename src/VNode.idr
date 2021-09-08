@@ -40,5 +40,5 @@ defineVoidTag : String -> List Attribute -> DOM V
 defineVoidTag name attrs = VDOM initMetadata (Void name attrs)
 
 export 
-text : String -> DOM V
-text string = VDOM initMetadata (Text string)
+text : Show a => a -> DOM V
+text string = VDOM initMetadata (Text (show string))

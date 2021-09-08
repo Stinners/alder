@@ -1,73 +1,41 @@
 module Main 
 
 import HTML
+import VNode 
+import Render
+import Attributes
 
+Model : Type 
+Model = Integer
 
-{-
--- Creates an empty node an returns a pointer to it
-%foreign "browser:lambda: node => document.createElement(node)"
-prim__makeNode : String -> PrimIO AnyPtr
+%foreign "browser:lambda: (node, func) => node.onclick = func"
+prim__onClick : AnyPtr -> (IO ()) -> PrimIO AnyPtr 
 
--- Returns undefined
-%foreign "browser:lambda: (node, attr, value) => node.setAttribute(attr, value)"
-prim__setAttr : AnyPtr -> String -> String -> PrimIO AnyPtr
+initModel : Model 
+initModel = 0
 
-%foreign "browser:lambda: (parent, child) => parent.appendChild(child)"
-prim__addNode : AnyPtr -> AnyPtr -> PrimIO AnyPtr
+view : Model -> DOM V
+view count = 
+  div [] [
+    h1 [] [text "Count"]
+    , span [] [text count]
+    , button [Id "inc", Class ["test", "foobar"]] [text "+"]
+  ]
 
-%foreign "browser:lambda: id => document.getElementById(id)"
-prim__getRoot : String -> PrimIO AnyPtr
-
-%foreign "browser:lambda: text => document.createTextNode(text)"
-prim__madeText : String -> PrimIO AnyPtr
-
-%foreign "browser:lambda: value => console.log(value)"
-prim__consoleLog : AnyPtr -> PrimIO AnyPtr
-
-%foreign "browser:lambda: value => console.log(value)"
-prim__consoleString : String -> PrimIO AnyPtr
-
-consoleLog : AnyPtr -> IO AnyPtr 
-consoleLog value = primIO $ prim__consoleLog value
-
-consoleString : String -> IO AnyPtr 
-consoleString value = primIO $ prim__consoleString value
-
-getRoot : String -> IO AnyPtr 
-getRoot id = primIO $ prim__getRoot id
-
-render : AnyPtr -> VNode -> IO AnyPtr
-render root (Tag name xs ys) = do
-  node  <- primIO $ prim__makeNode name
-  _     <- primIO $ prim__setAttr node "class" "idris"
-  child <- primIO $ prim__addNode root node
-  pure child
-render root (VoidTag x xs) = primIO $ prim__getRoot "test"
-render root (Text text) = do
-  node <- primIO $ prim__madeText text
-  _ <- primIO $ prim__addNode root node
-  pure node
-
-main : IO ()
-main = do
-  let node = Tag "p" [] []
-  let text = Text "Hello from Idris!"
-
-  _ <- consoleString "Starting"
+update : Model -> IO ()
+update model = do
+  consoleLog "Starting"
   root <- getRoot "idris-root"
-  _ <- consoleLog root
-  p <- render root node 
-  _ <- render p text
+  let model = model + 1 
+  let html = view model
+  live <- render root html
+  button <- getRoot "inc"
+  _ <- primIO $ prim__onClick button (update model)
+  consoleLog "Done"
   pure ()
-  -}
 
 main : IO ()
 main = do
-  let htmlTest = html [] 
-                     [ head [] []
-                     , body [] [
-                         h1 [Class ["header"], Id "main-header"] [text "Hello, World!"] 
-                         ,  p [] [text "This is test"]
-                         ]
-                     ]
-  putStrLn (show htmlTest)
+  update (-1)
+  
+                     
