@@ -1,6 +1,6 @@
 module Render
 
-import Data.Strings
+import Data.String
 
 import VNode
 import Attributes

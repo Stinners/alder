@@ -1,7 +1,7 @@
 
 module Attributes
 
-import Data.Strings
+import Data.String
 
 quote : String -> String 
 quote string = fastConcat ["\"", string, "\""]

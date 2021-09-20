@@ -24,14 +24,12 @@ view count =
 
 update : Model -> IO ()
 update model = do
-  consoleLog "Starting"
   root <- getRoot "idris-root"
   let model = model + 1 
   let html = view model
   live <- render root html
   button <- getRoot "inc"
   _ <- primIO $ prim__onClick button (update model)
-  consoleLog "Done"
   pure ()
 
 main : IO ()
